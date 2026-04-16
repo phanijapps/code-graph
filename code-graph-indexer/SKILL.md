@@ -1,6 +1,6 @@
 ---
 name: code-graph-indexer
-description: Build and refresh a local SQLite code graph for a workspace. Use this skill to index Python, Java, and TypeScript (including TSX) source trees with tree-sitter, populate a graph of files/symbols/edges, an AST index, an FTS5 keyword index, and (optionally) a sqlite-vec semantic embedding index for semantic search setup. Triggers on requests like "index my codebase", "build a code graph", "scan the workspace for symbols", "reindex changed files since origin/main", "refresh the code index", "set up semantic code search", "re-scan staged files into the graph DB", or any request to create or update the `.kg/code_kg.sqlite` database. Does NOT answer questions about the code — for that, use the companion `code-graph-query` skill.
+description: Build and refresh a local SQLite code graph for a workspace of one or many repos. Use this skill to index Python, Java, and TypeScript (including TSX) source trees with tree-sitter, populate a graph of files/symbols/edges, an AST index, an FTS5 keyword index, and (optionally) a sqlite-vec semantic embedding index. Triggers on "index my codebase", "build a code graph", "index my whole workspace", "index all my repos", "index multiple projects into one database", "set up cross-project dependency search", "scan the workspace for symbols", "reindex changed files since origin/main", "refresh the code index", "set up semantic code search", "re-scan staged files into the graph DB", or any request to create or update the `.kg/code_kg.sqlite` database. For multi-repo workspaces, point `--root` at the parent directory so one DB covers every repo. Does NOT answer questions about the code — for that, use the companion `code-graph-query` skill.
 license: MIT
 metadata:
   author: code-graph
@@ -89,6 +89,56 @@ python scripts/index.py --root . --db .kg/code_kg.sqlite --full --no-embeddings
 python scripts/index.py --root . --db .kg/code_kg.sqlite --full \
     --include-languages python,typescript \
     --include-paths src,web
+```
+
+## Multi-repo workspaces (one DB across many projects)
+
+When the user asks to "index everything in my workspace" or "figure out
+dependencies between my projects", **do NOT run the indexer once per
+repo**. Point `--root` at the parent directory that contains all the
+repos and keep a single shared DB:
+
+```
+~/workspace/
+├── .kg/
+│   └── code_kg.sqlite     ← one DB for the whole workspace
+├── repo-a/
+├── repo-b/
+└── repo-c/
+```
+
+```bash
+python scripts/index.py \
+    --root ~/workspace \
+    --db ~/workspace/.kg/code_kg.sqlite \
+    --full
+```
+
+What this gives you:
+
+- Each repo's `.git/`, `node_modules/`, `.venv/`, etc. are skipped
+  automatically — no per-repo configuration.
+- Stored paths are naturally namespaced by repo: `repo-a/src/foo.py`,
+  `repo-b/lib/bar.java`, etc.
+- `imports` edges captured across repos become the primary signal for
+  **cross-project dependency analysis** via the `code-graph-query` skill.
+- Semantic `--search` spans every repo; `--neighbors` BFS walks across
+  repos through `imports` edges.
+
+Incremental update for one repo without rebuilding the whole workspace:
+
+```bash
+python scripts/index.py \
+    --root ~/workspace \
+    --db ~/workspace/.kg/code_kg.sqlite \
+    --paths repo-a
+```
+
+Narrow a full index to specific repos only:
+
+```bash
+python scripts/index.py --root ~/workspace --db ~/workspace/.kg/code_kg.sqlite --full \
+    --include-paths repo-a,repo-b
 ```
 
 ## Arguments

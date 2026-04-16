@@ -1,6 +1,6 @@
 ---
 name: code-graph-query
-description: Use this skill to answer questions about a codebase by querying a pre-built SQLite code graph. Triggers on "who calls X", "find callers/callees of <func>", "trace the call graph for <func>", "search the codebase for <concept>", "find functions without docstrings", "find try/except blocks that swallow exceptions", "explain this symbol/class/file", "find all call sites of <func>", "find usages of <symbol>", "what does <symbol> call", "show me where <func> is used" — even when the user does not mention indexing, graphs, or SQLite. Runs FTS5 keyword search, optional semantic vector search, BFS over call/import/contains edges, and AST-level structural queries. Read-only; requires a database built by the `code-graph-indexer` skill. Do not use for simple in-file text search (use grep instead) or when the task is to edit code.
+description: Use this skill to answer questions about a codebase — single repo or a multi-repo workspace — by querying a pre-built SQLite code graph. Triggers on "who calls X", "find callers/callees of <func>", "trace the call graph", "search the codebase for <concept>", "find functions without docstrings", "find try/except blocks that swallow exceptions", "explain this symbol/class/file", "find all call sites", "find usages of <symbol>", "show me where <func> is used", "what depends on <repo>", "find cross-project dependencies", "which repos import from <X>", "trace imports across my projects" — even when the user does not mention indexing, graphs, or SQLite. Runs FTS5 keyword search, optional semantic vector search, BFS over call/import/contains edges across repos, and AST-level structural queries. Read-only; requires a database built by the `code-graph-indexer` skill. Do not use for simple in-file text search (use grep instead) or when the task is to edit code.
 license: MIT
 ---
 
@@ -64,6 +64,67 @@ Bundles target node + direct callers + direct callees + owning file + extracted 
 
 ### `--explain-file PATH`
 Bundles file node + symbols defined + imports + top 10 symbols by outgoing call count. Use for "give me an overview of `src/foo.py`".
+
+## Cross-repo dependency analysis
+
+When the workspace was indexed as a single multi-repo tree (see the
+`code-graph-indexer` skill for the "one DB across many projects"
+pattern), paths are prefixed by repo name (`repo-a/src/foo.py`). Use
+these primitives to answer "what depends on what":
+
+### Every cross-repo import — raw SQL (strongest signal)
+
+```bash
+sqlite3 ~/workspace/.kg/code_kg.sqlite "
+  SELECT src_id, dst_id, type FROM edges
+  WHERE type='imports'
+    AND src_id LIKE 'file:repo-a/%'
+    AND (dst_id LIKE '%repo-b%' OR dst_id LIKE '%repo-c%')
+  ORDER BY src_id;"
+```
+
+### Which repos does `repo-a` pull from?
+
+```bash
+sqlite3 ~/workspace/.kg/code_kg.sqlite "
+  SELECT DISTINCT
+    CASE
+      WHEN dst_id LIKE 'sym:%' THEN substr(dst_id, instr(dst_id, ':')+1)
+      ELSE dst_id
+    END AS target
+  FROM edges WHERE type='imports' AND src_id LIKE 'file:repo-a/%';"
+```
+
+### Graph walk across repo boundaries
+
+`--neighbors` with radius ≥ 2 follows `imports` and `calls` edges
+across files and repos:
+
+```bash
+python3 scripts/query.py --db ~/workspace/.kg/code_kg.sqlite \
+    --neighbors "sym:python:repo-a.src.api:serve" --radius 3
+```
+
+### File-level view
+
+```bash
+python3 scripts/query.py --db ~/workspace/.kg/code_kg.sqlite \
+    --explain-file repo-a/src/api.py
+```
+
+The returned bundle's `imports` list is the cleanest per-file answer
+to "what does this file depend on".
+
+### Caveats for cross-repo analysis
+
+- `imports` edges are the reliable signal. `calls` edges are best-effort
+  within a repo; cross-repo callee resolution can be lossy because the
+  callee's symbol id may not match perfectly (synthetic targets).
+- Dashes-in-repo-names (`my-repo/`) cannot be imported as Python
+  packages, so there are no true cross-repo Python dependencies to
+  capture in that shape.
+- Semantic `--search` naturally spans all indexed repos — a good
+  fallback when precise edge resolution fails.
 
 ## Symbol resolution
 
