@@ -149,7 +149,8 @@ CREATE VIRTUAL TABLE vec_embeddings USING vec0(
 ```
 
 One row per `nodes.id` that had non-empty text. Same `text_blob` used for
-FTS is embedded (via `sentence-transformers/all-MiniLM-L6-v2` by default).
+FTS is embedded (via `fastembed` with `BAAI/bge-small-en-v1.5` by default —
+384-dim ONNX model, no PyTorch).
 
 Query (KNN) via the vec0 MATCH syntax:
 ```sql

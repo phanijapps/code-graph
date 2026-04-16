@@ -41,11 +41,11 @@ pip install -r requirements.txt
 ```
 
 `requirements.txt` lives alongside this skill. It pins `tree-sitter` +
-grammars, `sqlite-vec`, and (optional) `sentence-transformers`.
+grammars, `sqlite-vec`, and (optional) `fastembed`.
 
-Python 3.12+. On first run, `sentence-transformers` will download the
-embedding model (~90 MB for `all-MiniLM-L6-v2`); budget that time. If you
-don't want embeddings, pass `--no-embeddings`.
+Python 3.12+. On first run, `fastembed` will download an ONNX embedding
+model (~130 MB for `BAAI/bge-small-en-v1.5`); budget that time. No PyTorch
+required. If you don't want embeddings, pass `--no-embeddings`.
 
 ## Canonical invocations
 
@@ -104,7 +104,7 @@ python scripts/index.py --root . --db .kg/code_kg.sqlite --full \
 | `--include-languages` | `python,java,typescript` | CSV filter by language. |
 | `--include-paths` | — | CSV root-relative path prefixes to keep. |
 | `--max-file-size-bytes` | `2000000` | Skip files larger than this. |
-| `--embed-model` | `sentence-transformers/all-MiniLM-L6-v2` | 384-dim model. |
+| `--embed-model` | `BAAI/bge-small-en-v1.5` | 384-dim ONNX model (served by fastembed). |
 | `--no-embeddings` | off | Skip embeddings entirely. |
 
 Mode flags (`--full`, `--paths`, `--changed-since`, `--only-staged`) are
@@ -135,9 +135,11 @@ parse/IO failure per file never aborts the whole run.
 
 ## Gotchas
 
-- **First-run embedding model download.** `sentence-transformers` pulls
-  `all-MiniLM-L6-v2` from Hugging Face on first use (~90 MB). Use
-  `--no-embeddings` if offline or constrained — FTS + graph + AST still work.
+- **First-run embedding model download.** `fastembed` pulls
+  `BAAI/bge-small-en-v1.5` (ONNX) from Hugging Face on first use (~130 MB).
+  Use `--no-embeddings` if offline or constrained — FTS + graph + AST still
+  work. For fully offline runs, pre-stage the model cache and set
+  `FASTEMBED_CACHE_PATH=/path/to/cache`.
 - **sqlite-vec platform wheels.** `sqlite-vec` ships binary wheels for
   linux-x86_64, linux-aarch64, macOS, and win64. On unsupported platforms it
   will fail to load — the indexer detects this, warns on stderr, and continues

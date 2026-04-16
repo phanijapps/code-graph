@@ -165,13 +165,13 @@ def _load_vec_extension(conn: sqlite3.Connection) -> bool:
 
 def _embed_query(text: str, model_name: str) -> list[float] | None:
     try:
-        from sentence_transformers import SentenceTransformer  # type: ignore
+        from fastembed import TextEmbedding  # type: ignore
     except ImportError:
-        print("warn: sentence-transformers not installed; skipping semantic search",
+        print("warn: fastembed not installed; skipping semantic search",
               file=sys.stderr)
         return None
     try:
-        vec = SentenceTransformer(model_name).encode([text], normalize_embeddings=True)[0]
+        vec = next(iter(TextEmbedding(model_name=model_name).embed([text])))
         return [float(x) for x in vec]
     except Exception as exc:
         print(f"warn: embedding failed ({exc}); skipping semantic search", file=sys.stderr)
@@ -488,7 +488,7 @@ def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="query.py",
                                 description="Read-only queries over the code-graph SQLite DB.")
     p.add_argument("--db", required=True, help="Path to the SQLite DB file.")
-    p.add_argument("--embed-model", default="sentence-transformers/all-MiniLM-L6-v2",
+    p.add_argument("--embed-model", default="BAAI/bge-small-en-v1.5",
                    help="Embedding model for --search semantic fusion.")
     mode = p.add_mutually_exclusive_group(required=True)
     mode.add_argument("--search", metavar="TEXT")

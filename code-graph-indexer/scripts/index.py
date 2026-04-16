@@ -90,7 +90,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p.add_argument("--include-languages", default="python,java,typescript")
     p.add_argument("--include-paths", default="")
     p.add_argument("--max-file-size-bytes", type=int, default=2_000_000)
-    p.add_argument("--embed-model", default="sentence-transformers/all-MiniLM-L6-v2")
+    p.add_argument("--embed-model", default="BAAI/bge-small-en-v1.5")
     p.add_argument("--no-embeddings", action="store_true")
     args = p.parse_args(argv)
     if not (args.full or args.paths or args.changed_since or args.only_staged):
@@ -553,6 +553,12 @@ def write_result(conn: sqlite3.Connection, res: FileResult) -> None:
 # --------------------------------------------------------------------------- embeddings
 
 class Embedder:
+    """Local text embedder backed by fastembed (ONNX runtime).
+
+    Default model is a 384-dim vector matching the vec0 schema. No PyTorch
+    required. Falls back to a no-op if fastembed isn't installed.
+    """
+
     def __init__(self, model_name: str):
         self.model_name = model_name
         self.model = None
@@ -565,12 +571,12 @@ class Embedder:
         if self._failed:
             return False
         try:
-            from sentence_transformers import SentenceTransformer  # type: ignore
-            self.model = SentenceTransformer(self.model_name)
+            from fastembed import TextEmbedding  # type: ignore
+            self.model = TextEmbedding(model_name=self.model_name)
             self.ok = True
             return True
         except Exception as e:
-            log(f"[warn] sentence-transformers unavailable ({e}); skipping embeddings.")
+            log(f"[warn] fastembed unavailable ({e}); skipping embeddings.")
             self._failed = True
             return False
 
@@ -578,8 +584,8 @@ class Embedder:
         import numpy as np
         if self.model is None:
             raise RuntimeError("Embedder.encode called before ensure() succeeded")
-        v = self.model.encode(texts, batch_size=BATCH_SIZE, show_progress_bar=False)
-        return np.asarray(v, dtype="float32")
+        vecs = list(self.model.embed(texts, batch_size=BATCH_SIZE))
+        return np.asarray(vecs, dtype="float32")
 
 
 def write_embeddings(conn: sqlite3.Connection, embedder: Embedder,

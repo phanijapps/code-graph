@@ -11,7 +11,7 @@ Read-only CLI over a code-graph SQLite index. Answers "who calls X?", "find func
 ## Preconditions
 
 - A SQLite DB produced by the `code-graph-indexer` skill must exist (default path: `.kg/code_kg.sqlite`). If it is missing or stale, ask the user to run the indexer first — do not attempt to index from this skill.
-- `python3` on PATH. `sqlite-vec` and `sentence-transformers` are optional; the script degrades gracefully to FTS-only if either is absent.
+- `python3` on PATH. `sqlite-vec` and `fastembed` are optional; the script degrades gracefully to FTS-only if either is absent.
 
 ## How to use
 

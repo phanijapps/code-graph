@@ -98,7 +98,7 @@ For every source file, the indexer emits:
 - **Edges** — `defines`, `contains`, `calls`, `imports`, `inherits`.
 - **AST nodes** — `FunctionDef`, `Call`, `Try`, `ExceptHandler`, `Import` — with spans and kind-specific attributes.
 - **Full-text index** — names, signatures, docstrings, short code snippets.
-- **Embeddings** (optional) — 384-dim vectors via `sentence-transformers/all-MiniLM-L6-v2`, stored in `sqlite-vec`.
+- **Embeddings** (optional) — 384-dim vectors via `fastembed` with `BAAI/bge-small-en-v1.5` (ONNX, no PyTorch), stored in `sqlite-vec`.
 
 Files that fail to parse are logged and skipped; the run never aborts on a single bad file.
 
@@ -130,7 +130,7 @@ See `code-graph-query/references/EXAMPLES.md` for example invocations and their 
 
 - **Single-file SQLite.** Portable, easy to ship, easy to inspect with `sqlite3`. No separate service to babysit.
 - **Tree-sitter for all languages.** One parser library, one API surface, grammars that are production-grade (used by GitHub, Zed, Neovim). Python/Java/TypeScript today; adding Go or Rust is small.
-- **Graceful degradation.** If `sqlite-vec` fails to load on your platform, you still get FTS + graph + AST. If `sentence-transformers` isn't installed, you still get everything except semantic search.
+- **Graceful degradation.** If `sqlite-vec` fails to load on your platform, you still get FTS + graph + AST. If `fastembed` isn't installed, you still get everything except semantic search.
 - **Idempotent by default.** Incremental modes skip files whose sha256 hash hasn't changed. `--full` forces a rebuild and sweeps any DB rows for files that no longer exist on disk.
 - **Two skills, not one.** The query skill has no parsing or embedding deps — agents can load it cheaply many times per session. The indexer runs occasionally.
 
@@ -165,7 +165,7 @@ code-graph/
 - Python 3.12+
 - SQLite with extension loading compiled in (pyenv, python.org installer, or conda ship with this; some distro-packaged Pythons don't)
 - `sqlite-vec` wheel for your platform (linux-x86_64, linux-aarch64, macOS, win64 are pre-built)
-- Optional: `sentence-transformers` for semantic search (pulls torch on first install)
+- Optional: `fastembed` for semantic search (ONNX runtime, ~60 MB install — no PyTorch)
 
 Pinned versions live in each skill's `requirements.txt`.
 

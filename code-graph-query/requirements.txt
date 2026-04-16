@@ -5,5 +5,5 @@
 sqlite-vec>=0.1.6,<0.2
 
 # Optional: only needed if you want to run semantic `--search` against embeddings.
-# Omit this to stay lightweight; FTS + graph + AST queries work without it.
-sentence-transformers>=3.0,<4
+# ONNX-based; no PyTorch required. Omit this to stay lightweight.
+fastembed>=0.4,<0.5

@@ -11,5 +11,6 @@ tree-sitter-typescript>=0.23,<0.24
 sqlite-vec>=0.1.6,<0.2
 
 # Optional: local embeddings for semantic search.
+# Uses ONNX runtime (no PyTorch). Much smaller install than sentence-transformers.
 # Remove this line (or run the indexer with --no-embeddings) if you only want FTS.
-sentence-transformers>=3.0,<4
+fastembed>=0.4,<0.5

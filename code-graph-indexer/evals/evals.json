@@ -41,7 +41,7 @@
       "id": 7,
       "query": "refresh the code graph but skip embeddings, no internet right now",
       "should_trigger": true,
-      "expected_output": "The skill is invoked with --no-embeddings and completes without downloading the sentence-transformers model."
+      "expected_output": "The skill is invoked with --no-embeddings and completes without downloading the fastembed model."
     },
     {
       "id": 8,
