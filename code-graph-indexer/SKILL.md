@@ -228,6 +228,26 @@ parse/IO failure per file never aborts the whole run.
 Load `references/DATA_MODEL.md` when you need exact column semantics, ID
 grammar, span encoding, or `extra` JSON shapes per AST kind.
 
+## Troubleshooting
+
+Load `references/TROUBLESHOOTING.md` when any of the following happen:
+
+- `pip install` fails with `SSL: CERTIFICATE_VERIFY_FAILED`
+- fastembed fails to download the embedding model (`SSLError`,
+  `ConnectionError`, `huggingface.co` unreachable)
+- Corporate network, proxy, or air-gapped environment
+- `sqlite-vec` warns it couldn't load, or `sqlite3.enable_load_extension`
+  errors with "not authorized"
+- First `--full` run appears to hang (check it isn't waiting on a
+  ~130 MB model download over a slow link)
+- The user asks "how do I run this offline" / "how do I use this in
+  enterprise" / "how do I install this behind a proxy"
+
+The reference covers corp CA cert setup for pip + Python, offline
+model staging, proxy env vars, platform-specific `sqlite-vec` gotchas,
+and the `--no-embeddings` fallback when network workarounds aren't an
+option.
+
 ## Validation after a run
 
 Quick sanity check (no query skill required):
