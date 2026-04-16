@@ -230,23 +230,14 @@ grammar, span encoding, or `extra` JSON shapes per AST kind.
 
 ## Troubleshooting
 
-Load `references/TROUBLESHOOTING.md` when any of the following happen:
+If the embedding model fails to download (SSL cert error, HF blocked,
+offline, hanging first run) or `sqlite-vec` can't load, **rerun with
+`--no-embeddings` and tell the user**. FTS, call graph, AST queries,
+and cross-repo dependency lookups all still work without embeddings.
 
-- `pip install` fails with `SSL: CERTIFICATE_VERIFY_FAILED`
-- fastembed fails to download the embedding model (`SSLError`,
-  `ConnectionError`, `huggingface.co` unreachable)
-- Corporate network, proxy, or air-gapped environment
-- `sqlite-vec` warns it couldn't load, or `sqlite3.enable_load_extension`
-  errors with "not authorized"
-- First `--full` run appears to hang (check it isn't waiting on a
-  ~130 MB model download over a slow link)
-- The user asks "how do I run this offline" / "how do I use this in
-  enterprise" / "how do I install this behind a proxy"
-
-The reference covers corp CA cert setup for pip + Python, offline
-model staging, proxy env vars, platform-specific `sqlite-vec` gotchas,
-and the `--no-embeddings` fallback when network workarounds aren't an
-option.
+See `references/TROUBLESHOOTING.md` for the short version of this
+advice — don't build elaborate cert/proxy workarounds unless the user
+explicitly asks for semantic search.
 
 ## Validation after a run
 

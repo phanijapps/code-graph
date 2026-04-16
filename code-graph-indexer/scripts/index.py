@@ -576,7 +576,9 @@ class Embedder:
             self.ok = True
             return True
         except Exception as e:
-            log(f"[warn] fastembed unavailable ({e}); skipping embeddings.")
+            log(f"[warn] embedding model unavailable ({e}).")
+            log("[warn] FTS, call graph, and AST queries still work. "
+                "To silence this, rerun with --no-embeddings.")
             self._failed = True
             return False
 
