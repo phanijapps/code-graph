@@ -1,0 +1,89 @@
+{
+  "skill_name": "code-graph-indexer",
+  "evals": [
+    {
+      "id": 1,
+      "query": "index my python codebase so i can query it later",
+      "should_trigger": true,
+      "expected_output": "The skill is invoked and runs scripts/index.py --full against the workspace, producing .kg/code_kg.sqlite and a summary JSON."
+    },
+    {
+      "id": 2,
+      "query": "build a code graph for this repo",
+      "should_trigger": true,
+      "expected_output": "The skill is invoked and performs a full index build."
+    },
+    {
+      "id": 3,
+      "query": "set up semantic code search for the project (we have python + typescript)",
+      "should_trigger": true,
+      "expected_output": "The skill is invoked with default settings (embeddings enabled) and indexes both languages."
+    },
+    {
+      "id": 4,
+      "query": "scan the workspace for symbols and classes and store them somewhere I can query",
+      "should_trigger": true,
+      "expected_output": "The skill is invoked, runs a full index, and confirms the SQLite DB location."
+    },
+    {
+      "id": 5,
+      "query": "reindex files that changed since origin/main — i just merged a branch",
+      "should_trigger": true,
+      "expected_output": "The skill is invoked with --changed-since origin/main."
+    },
+    {
+      "id": 6,
+      "query": "update the kg database for just the files I have staged",
+      "should_trigger": true,
+      "expected_output": "The skill is invoked with --only-staged."
+    },
+    {
+      "id": 7,
+      "query": "refresh the code graph but skip embeddings, no internet right now",
+      "should_trigger": true,
+      "expected_output": "The skill is invoked with --no-embeddings and completes without downloading the sentence-transformers model."
+    },
+    {
+      "id": 8,
+      "query": "i want to rebuild the .kg/code_kg.sqlite from scratch for this java service",
+      "should_trigger": true,
+      "expected_output": "The skill is invoked with --full (and likely --include-languages java)."
+    },
+    {
+      "id": 9,
+      "query": "search the codebase for functions that handle auth",
+      "should_trigger": false,
+      "expected_output": "This is a query, not an index build. The code-graph-query skill should handle it; code-graph-indexer should NOT trigger."
+    },
+    {
+      "id": 10,
+      "query": "who calls `calculate_total` in this repo",
+      "should_trigger": false,
+      "expected_output": "This is a call-graph query; code-graph-query handles it, not the indexer."
+    },
+    {
+      "id": 11,
+      "query": "write a new python function that parses a yaml config",
+      "should_trigger": false,
+      "expected_output": "This is code authoring, unrelated to indexing. The indexer should not trigger."
+    },
+    {
+      "id": 12,
+      "query": "parse this typescript file manually and tell me what's wrong with it",
+      "should_trigger": false,
+      "expected_output": "Ad-hoc parse request, not a workspace-wide index. The indexer should not trigger."
+    },
+    {
+      "id": 13,
+      "query": "add sqlite-vec to my requirements.txt and write a query against it",
+      "should_trigger": false,
+      "expected_output": "Asking for coding help, not to run the indexer. Should not trigger."
+    },
+    {
+      "id": 14,
+      "query": "find all functions in this repo that don't have docstrings",
+      "should_trigger": false,
+      "expected_output": "This is a structural AST query; code-graph-query handles it. The indexer should not trigger unless the index doesn't exist yet — in that case the query skill will prompt the user to index first."
+    }
+  ]
+}

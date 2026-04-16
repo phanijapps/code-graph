@@ -1,0 +1,15 @@
+# code-graph-indexer — required deps
+# Python 3.12+
+
+# Parsing: tree-sitter + grammars for Python, Java, TypeScript (incl. TSX).
+tree-sitter>=0.23,<0.24
+tree-sitter-python>=0.23,<0.24
+tree-sitter-java>=0.23,<0.24
+tree-sitter-typescript>=0.23,<0.24
+
+# Local vector index inside SQLite.
+sqlite-vec>=0.1.6,<0.2
+
+# Optional: local embeddings for semantic search.
+# Remove this line (or run the indexer with --no-embeddings) if you only want FTS.
+sentence-transformers>=3.0,<4

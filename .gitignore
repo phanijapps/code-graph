@@ -1,0 +1,35 @@
+# User docs
+_docs/
+docs/
+CLAUDE.md
+
+# Tooling
+.claude/
+.venv/
+venv/
+.env
+.env.*
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+build/
+dist/
+
+# Code-graph state (the databases this project builds)
+.kg/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo

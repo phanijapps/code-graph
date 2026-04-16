@@ -1,0 +1,96 @@
+{
+  "skill_name": "code-graph-query",
+  "description": "Trigger evaluation cases for the code-graph-query skill. should_trigger=true items should activate the skill; should_trigger=false items should NOT activate it (they are near-miss negatives for other skills or tools).",
+  "evals": [
+    {
+      "id": 1,
+      "query": "who calls the foo function in this repo?",
+      "should_trigger": true,
+      "expected_output": "Skill is invoked; agent runs `scripts/query.py --db <db> --callers foo` and narrates the callers."
+    },
+    {
+      "id": 2,
+      "query": "find all callers of ingest_file across the codebase",
+      "should_trigger": true,
+      "expected_output": "Skill is invoked; agent runs `--callers ingest_file` and returns callers with depth info."
+    },
+    {
+      "id": 3,
+      "query": "find all functions in this project that are missing docstrings",
+      "should_trigger": true,
+      "expected_output": "Skill is invoked; agent runs `--functions-without-docstring` and returns the list."
+    },
+    {
+      "id": 4,
+      "query": "search the codebase for where we handle rate limiting and retries",
+      "should_trigger": true,
+      "expected_output": "Skill is invoked; agent runs `--search \"rate limiting retry\"` (or similar) and narrates hits."
+    },
+    {
+      "id": 5,
+      "query": "explain the UserService class for me — what does it do and who uses it?",
+      "should_trigger": true,
+      "expected_output": "Skill is invoked; agent runs `--explain-symbol UserService` and narrates the bundle."
+    },
+    {
+      "id": 6,
+      "query": "find try/except blocks that swallow exceptions without logging anything",
+      "should_trigger": true,
+      "expected_output": "Skill is invoked; agent runs `--try-except-without-logging`."
+    },
+    {
+      "id": 7,
+      "query": "trace the call graph downstream from the `process_batch` function",
+      "should_trigger": true,
+      "expected_output": "Skill is invoked; agent runs `--callees process_batch` with `--max-depth` set as needed."
+    },
+    {
+      "id": 8,
+      "query": "give me an overview of src/ingest/pipeline.py — symbols, imports, and hotspots",
+      "should_trigger": true,
+      "expected_output": "Skill is invoked; agent runs `--explain-file src/ingest/pipeline.py`."
+    },
+    {
+      "id": 9,
+      "query": "show me every place `commit()` is called in the repo",
+      "should_trigger": true,
+      "expected_output": "Skill is invoked; agent runs `--ast-call commit`."
+    },
+    {
+      "id": 10,
+      "query": "index my codebase and build a searchable graph for it",
+      "should_trigger": false,
+      "expected_output": "This is a task for the code-graph-indexer skill, not the query skill. The query skill should NOT trigger on indexing requests."
+    },
+    {
+      "id": 11,
+      "query": "find foo in this file",
+      "should_trigger": false,
+      "expected_output": "Single-file text search is a job for `grep`/`Grep`, not a graph query. Skill should NOT trigger."
+    },
+    {
+      "id": 12,
+      "query": "rewrite the login function so it logs every exception instead of swallowing them",
+      "should_trigger": false,
+      "expected_output": "This is an editing task. The skill is read-only and should NOT trigger; the agent should edit the file directly."
+    },
+    {
+      "id": 13,
+      "query": "refresh the code graph — some files changed since last week",
+      "should_trigger": false,
+      "expected_output": "Re-indexing is the indexer skill's job. Query skill should NOT trigger."
+    },
+    {
+      "id": 14,
+      "query": "write a SQL query that joins users to orders on user_id",
+      "should_trigger": false,
+      "expected_output": "General SQL authoring unrelated to the code graph. Skill should NOT trigger."
+    },
+    {
+      "id": 15,
+      "query": "what does this function I just pasted do?",
+      "should_trigger": false,
+      "expected_output": "Explaining pasted inline code doesn't require the graph; standard reasoning is enough. Skill should NOT trigger."
+    }
+  ]
+}
